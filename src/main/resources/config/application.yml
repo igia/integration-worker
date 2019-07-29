@@ -1,0 +1,251 @@
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v.
+# 2.0 with a Healthcare Disclaimer.
+# A copy of the Mozilla Public License, v. 2.0 with the Healthcare Disclaimer can
+# be found under the top level directory, named LICENSE.
+# If a copy of the MPL was not distributed with this file, You can obtain one at
+# http://mozilla.org/MPL/2.0/.
+# If a copy of the Healthcare Disclaimer was not distributed with this file, You
+# can obtain one at the project website https://github.com/igia.
+#
+# Copyright (C) 2018-2019 Persistent Systems, Inc.
+#
+
+# ===================================================================
+# Spring Boot configuration.
+#
+# This configuration will be overridden by the Spring profile you use,
+# for example application-dev.yml if you use the "dev" profile.
+#
+# More information on profiles: https://www.jhipster.tech/profiles/
+# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# ===================================================================
+
+eureka:
+    client:
+        enabled: true
+        healthcheck:
+            enabled: true
+        fetch-registry: true
+        register-with-eureka: true
+        instance-info-replication-interval-seconds: 10
+        registry-fetch-interval-seconds: 10
+    instance:
+        appname: ${spring.application.name}
+        instanceId: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+        lease-renewal-interval-in-seconds: 5
+        lease-expiration-duration-in-seconds: 10
+        status-page-url-path: ${management.endpoints.web.base-path}/info
+        health-check-url-path: ${management.endpoints.web.base-path}/health
+        metadata-map:
+            zone: primary # This is needed for the load balancer
+            profile: ${spring.profiles.active}
+            version: ${info.project.version:}
+            git-version: ${git.commit.id.describe:}
+            git-commit: ${git.commit.id.abbrev:}
+            git-branch: ${git.branch:}
+ribbon:
+    eureka:
+        enabled: true
+feign:
+    hystrix:
+        enabled: true
+#    client:
+#        config:
+#            default:
+#                connectTimeout: 5000
+#                readTimeout: 5000
+
+# See https://github.com/Netflix/Hystrix/wiki/Configuration
+hystrix:
+    command:
+        default:
+            execution:
+                isolation:
+                    strategy: SEMAPHORE
+# See https://github.com/spring-cloud/spring-cloud-netflix/issues/1330
+#                    thread:
+#                        timeoutInMilliseconds: 10000
+    shareSecurityContext: true
+
+management:
+    endpoints:
+        web:
+            base-path: /management
+            exposure:
+                include: ["configprops", "env", "health", "info", "threaddump", "logfile" ]
+    endpoint:
+        health:
+            show-details: when_authorized
+    info:
+        git:
+            mode: full
+    health:
+        mail:
+            enabled: false # When using the MailService, configure an SMTP server and set this to true
+    metrics:
+        enabled: false # http://micrometer.io/ is disabled by default, as we use http://metrics.dropwizard.io/ instead
+
+spring:
+    application:
+        name: INTEGRATIONWORKER-I
+    messages:
+        basename: i18n/messages
+    mvc:
+        favicon:
+            enabled: false
+    thymeleaf:
+        mode: HTML
+
+security:
+    oauth2:
+        client:
+            client-id: internal
+            client-secret: internal
+        resource:
+            user-info-uri: http://localhost:9080/auth/realms/igia/protocol/openid-connect/userinfo
+
+server:
+    servlet:
+        session:
+            cookie:
+                http-only: true
+
+# Properties to be exposed on the /info management endpoint
+info:
+    # Comma separated list of profiles that will trigger the ribbon to show
+    display-ribbon-on-profiles: "dev"
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+    async:
+        core-pool-size: 2
+        max-pool-size: 50
+        queue-capacity: 10000
+    # By default CORS is disabled. Uncomment to enable.
+    #cors:
+        #allowed-origins: "*"
+        #allowed-methods: "*"
+        #allowed-headers: "*"
+        #exposed-headers: "Authorization,Link,X-Total-Count"
+        #allow-credentials: true
+        #max-age: 1800
+    mail:
+        from: integrationworker@localhost
+    swagger:
+        default-include-pattern: /api/.*
+        title: integrationworker API
+        description: integrationworker API documentation
+        version: 0.0.1
+        terms-of-service-url:
+        contact-name:
+        contact-url:
+        contact-email:
+        license:
+        license-url:
+
+logging:
+    file: target/integrationworker.log
+
+# ===================================================================
+# Application specific properties
+# Add your own application properties here, see the ApplicationProperties class
+# to have type-safe configuration, like in the JHipsterProperties above
+#
+# More documentation is available at:
+# https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+application:
+    message-broker-prefix: INTEGRATION
+    message-in-topic: ${application.message-broker-prefix}.${spring.application.name}
+    message-configuration-service-queue: ${application.message-broker-prefix}.CONFIGURATION
+    secret-key: this_is_encrypt_key
+    audit:
+        directory-path: AUDITMESSAGES
+        all-messages-filepath: ALL/all                                # file name is without extension
+        error-messages-filepath: ERROR/error                          # file name is without extension
+        filtered-out-messages-filepath: FILTERED_OUT/filter           # file name is without extension
+        file-suffix: yyyyMMdd
+
+jms:
+    component:
+        broker-url: ssl://activemq:61617
+        user: integration
+        password: integration
+        pool:
+            max-connections: 5
+        ssl:
+            trust-store: jms/client.ts
+            trust-store-password: igia-client
+            key-store: jms/client.ks
+            key-store-password: igia-client
+
+file:
+    endpoint:
+        common:
+            charset: UTF-8
+        consumer:
+            bridgeErrorHandler: true
+            startingDirectoryMustExist: true
+            directoryMustExist: true
+            autoCreate: false
+            runLoggingLevel: DEBUG
+            scheduler: quartz2
+        producer:
+            autoCreate: true
+
+sftp:
+    endpoint:
+        common:
+            charset: UTF-8
+            reconnectDelay: 60000
+        consumer:
+            bridgeErrorHandler: true
+            startingDirectoryMustExist: true
+            directoryMustExist: true
+            autoCreate: false
+            runLoggingLevel: DEBUG
+            scheduler: quartz2
+        producer:
+            autoCreate: true
+
+mllp:
+    endpoint:
+        consumer:
+            requireEndOfData: false
+            validatePayload: true
+            backlog: 20
+    component:
+        log-phi: false
+
+http:
+    endpoint:
+        consumer:
+            bridgeErrorHandler: true
+            httpMethodRestrict: GET,POST,PUT,DELETE
+            sendServerVersion: false
+        producer:
+            maxTotalConnections: 200
+            connectionsPerRoute: 20
+            bridgeEndpoint: true
+            copyHeaders: false
+    component:
+        http-connect-timeout: -1
+        http-socket-timeout: -1
+        consumer:
+            ssl:
+                key-store: jetty/jetty.ks
+                key-store-password: igia-jetty
+
