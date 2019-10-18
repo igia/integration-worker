@@ -51,6 +51,10 @@ public final class Constants {
     public static final String ENDPOINT_PROPERTY_PRESORT = "preSort";
     public static final String ENDPOINT_PROPERTY_SCHEDULER = "scheduler";
     public static final String ENDPOINT_PROPERTY_SCHEDULER_CRON = "scheduler.cron";
+    public static final String ENDPOINT_PROPERTY_PROXY_AUTH_HOST = "proxyAuthHost";
+    public static final String ENDPOINT_PROPERTY_PROXY_AUTH_PORT = "proxyAuthPort";
+    public static final String ENDPOINT_PROPERTY_PROXY_AUTH_SCHEME = "proxyAuthScheme";
+    public static final String ENDPOINT_SCHEME = "https";
 
     public static final String MLLP_PROTOCOL = "igia-mllp://";
     public static final String MLLP_PROPERTY_CONNECT_TIMEOUT = "connectTimeout";
@@ -66,5 +70,6 @@ public final class Constants {
     public static final String HTTP_PROPERTY_RESOURCE_URI = "resourceUri";
     public static final String HTTP_PROPERTY_AUTHPASSWORD = "authPassword";
     public static final String HTTPS_PROTOCOL = "https://";
+    public static final String HTTP_SECURE_PROTOCOL = "isSecure";
 
 }

@@ -31,9 +31,11 @@ import org.springframework.context.support.GenericApplicationContext;
 
 import com.google.common.base.Supplier;
 
+import io.igia.integration.worker.config.Constants;
 import io.igia.integration.worker.config.HttpEndpointProperties;
 import io.igia.integration.worker.datapipeline.dto.DestinationEndpoint;
 import io.igia.integration.worker.datapipeline.dto.EndpointConfiguration;
+import io.igia.integration.worker.datapipeline.dto.EndpointType;
 import io.igia.integration.worker.datapipeline.dto.SourceEndpoint;
 import io.igia.integration.worker.datapipeline.endpoint.HttpEndpoint;
 import io.igia.integration.worker.datapipeline.endpoint.util.EndpointUtil;
@@ -83,6 +85,7 @@ public class HttpEndpointTest {
 
         SourceEndpoint sourceEndpoint = new SourceEndpoint();
         sourceEndpoint.setConfigurations(endpointConfigurations);
+        sourceEndpoint.setType(EndpointType.HTTP);
 
         Mockito.when(httpEndpointProperties.getConsumer()).thenReturn(getDefaultSourceProperties());
         Mockito.when(endpointConfigMapper.mapToUriQueryString(ArgumentMatchers.anyMap())).thenCallRealMethod();
@@ -113,6 +116,7 @@ public class HttpEndpointTest {
 
         DestinationEndpoint destinationEndpoint = new DestinationEndpoint();
         destinationEndpoint.setConfigurations(endpointConfigurations);
+        destinationEndpoint.setType(EndpointType.HTTP);
 
         Mockito.when(httpEndpointProperties.getProducer()).thenReturn(getDefaultDestinationProperties());
         Mockito.when(endpointConfigMapper.mapToUriQueryString(ArgumentMatchers.anyMap())).thenCallRealMethod();
@@ -120,6 +124,42 @@ public class HttpEndpointTest {
         String destinationUri = httpEndpoint.generateUri(destinationEndpoint,dataPipelineId);
         assertEquals("igia-http://localhost:9000/resource?copyHeaders=false&maxTotalConnections=200"
                 + "&connectionsPerRoute=20&bridgeEndpoint=true", destinationUri);
+    }
+    
+    @Test
+    public void testGenerateDestinationHTTPSUri() {
+        List<EndpointConfiguration> endpointConfigurations = new ArrayList<>();
+        EndpointConfiguration endpointConfiguration = new EndpointConfiguration();
+        endpointConfiguration.setKey("hostname");
+        endpointConfiguration.setValue("localhost");
+        endpointConfigurations.add(endpointConfiguration);
+
+        endpointConfiguration = new EndpointConfiguration();
+        endpointConfiguration.setKey("port");
+        endpointConfiguration.setValue("9000");
+        endpointConfigurations.add(endpointConfiguration);
+
+        endpointConfiguration = new EndpointConfiguration();
+        endpointConfiguration.setKey("resourceUri");
+        endpointConfiguration.setValue("/resource");
+        endpointConfigurations.add(endpointConfiguration);
+        
+        endpointConfiguration = new EndpointConfiguration();
+        endpointConfiguration.setKey("isSecure");
+        endpointConfiguration.setValue("true");
+        endpointConfigurations.add(endpointConfiguration);
+
+        DestinationEndpoint destinationEndpoint = new DestinationEndpoint();
+        destinationEndpoint.setConfigurations(endpointConfigurations);
+
+        Mockito.when(httpEndpointProperties.getProducer()).thenReturn(getDefaultDestinationProperties());
+        Mockito.when(endpointConfigMapper.mapToUriQueryString(ArgumentMatchers.anyMap())).thenCallRealMethod();
+
+        String destinationUri = httpEndpoint.generateUri(destinationEndpoint,dataPipelineId);
+        assertEquals("igia-http://localhost:9000/resource?"+Constants.ENDPOINT_PROPERTY_PROXY_AUTH_PORT+"=9000&copyHeaders=false&maxTotalConnections=200"
+                + "&"+Constants.ENDPOINT_PROPERTY_PROXY_AUTH_SCHEME+"=https"+"&connectionsPerRoute=20&bridgeEndpoint=true&"
+                +Constants.ENDPOINT_PROPERTY_PROXY_AUTH_HOST+"=localhost", destinationUri);
+        
     }
 
     private Map<String, String> getDefaultSourceProperties() {
