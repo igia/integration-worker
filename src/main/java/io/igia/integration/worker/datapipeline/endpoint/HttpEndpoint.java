@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 
 import io.igia.integration.worker.config.Constants;
 import io.igia.integration.worker.config.HttpEndpointProperties;
+import io.igia.integration.worker.datapipeline.dto.DestinationEndpoint;
 import io.igia.integration.worker.datapipeline.dto.Endpoint;
 import io.igia.integration.worker.datapipeline.dto.EndpointConfiguration;
 import io.igia.integration.worker.datapipeline.dto.SourceEndpoint;
@@ -80,16 +81,24 @@ public class HttpEndpoint {
         if(endpoint instanceof SourceEndpoint){
             registerHandler(dataPipelineId, configMap);
             uri.append(Constants.HTTPS_PROTOCOL);
-       }else{
+       }else {
            uri.append(Constants.HTTP_PROTOCOL);
        }
         uri.append(configMap.get(Constants.ENDPOINT_PROPERTY_HOSTNAME)).append(":")
                 .append(configMap.get(Constants.ENDPOINT_PROPERTY_PORT))
                 .append(configMap.get(Constants.HTTP_PROPERTY_RESOURCE_URI)).append("?");
+
+        if(endpoint instanceof  DestinationEndpoint  && configMap.get(Constants.HTTP_SECURE_PROTOCOL)!= null 
+                && configMap.get(Constants.HTTP_SECURE_PROTOCOL).equalsIgnoreCase(Boolean.TRUE.toString())){
+            configMap.put(Constants.ENDPOINT_PROPERTY_PROXY_AUTH_HOST, configMap.get(Constants.ENDPOINT_PROPERTY_HOSTNAME));
+            configMap.put(Constants.ENDPOINT_PROPERTY_PROXY_AUTH_PORT, configMap.get(Constants.ENDPOINT_PROPERTY_PORT));
+            configMap.put(Constants.ENDPOINT_PROPERTY_PROXY_AUTH_SCHEME,Constants.ENDPOINT_SCHEME);
+        }
+
         configMap.remove(Constants.ENDPOINT_PROPERTY_HOSTNAME);
         configMap.remove(Constants.ENDPOINT_PROPERTY_PORT);
         configMap.remove(Constants.HTTP_PROPERTY_RESOURCE_URI);
-
+        configMap.remove(Constants.HTTP_SECURE_PROTOCOL);
         String baseUri = uri.toString();
         uri.append(endpointConfigMapper.mapToUriQueryString(configMap));
 
