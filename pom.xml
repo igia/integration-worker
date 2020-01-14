@@ -19,7 +19,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.igia</groupId>
 	<artifactId>integration-worker</artifactId>
-	<version>0.3.2</version>
+	<version>0.3.3</version>
 	<packaging>war</packaging>
 	<name>integration-worker</name>
 
